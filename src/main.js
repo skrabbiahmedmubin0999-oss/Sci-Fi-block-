@@ -181,7 +181,7 @@ class SciFiBlockPuzzleGame {
 
   // --- Pointer & Drag-and-Drop Interaction ---
 
-  onPointerDown(coords) {
+  onPointerDown(coords, event = null) {
     if (this.isSettingsOpen || this.isGameOver) return;
 
     // Trigger visual touch/click radial ripple indicator
@@ -227,11 +227,12 @@ class SciFiBlockPuzzleGame {
           y: dragH / 2
         };
 
+        const touchLift = event?.pointerType === 'touch' ? 60 : 0;
         piece.x = coords.x - this.dragPointerOffset.x;
-        piece.y = coords.y - this.dragPointerOffset.y;
-        this.currentPointerPos = coords;
+        piece.y = coords.y - this.dragPointerOffset.y - touchLift;
+        this.currentPointerPos = { x: coords.x, y: coords.y - touchLift };
 
-        this.updateSnapTarget(coords);
+        this.updateSnapTarget(this.currentPointerPos);
         break;
       }
     }
@@ -673,6 +674,10 @@ class SciFiBlockPuzzleGame {
           </div>
 
           <div id="modal-body" class="space-y-4">
+            <button id="modal-resume-btn" class="w-full py-2.5 rounded-lg border border-teal-500/50 bg-teal-950/50 text-teal-200 text-sm font-bold tracking-wide hover:bg-teal-900/60 transition">
+              RESUME GAME
+            </button>
+
             <!-- Preset Selector -->
             <div>
               <label class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2">Visual Aesthetic Mode</label>
@@ -738,6 +743,9 @@ class SciFiBlockPuzzleGame {
 
     closeBtn?.addEventListener('click', () => this.closeSettingsModal());
 
+    const resumeBtn = document.getElementById('modal-resume-btn');
+    resumeBtn?.addEventListener('click', () => this.closeSettingsModal());
+
     presetBtns.forEach(btn => {
       btn.addEventListener('click', () => {
         const targetId = btn.getAttribute('data-preset');
@@ -766,6 +774,7 @@ class SciFiBlockPuzzleGame {
 
   openSettingsModal() {
     this.isSettingsOpen = true;
+    this.engine?.pause();
     const modal = document.getElementById('game-modal');
     if (modal) modal.classList.remove('hidden');
     this.updateModalPresetButtons();
@@ -776,6 +785,7 @@ class SciFiBlockPuzzleGame {
     this.isSettingsOpen = false;
     const modal = document.getElementById('game-modal');
     if (modal) modal.classList.add('hidden');
+    if (!this.isGameOver) this.engine?.resume();
   }
 
   updateModalPresetButtons() {
@@ -884,6 +894,7 @@ class SciFiBlockPuzzleGame {
     this.score = 0;
     this.combo = 0;
     this.isGameOver = false;
+    this.engine?.resume();
     this.sound.playClear(2);
   }
 
