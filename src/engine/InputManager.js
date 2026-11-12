@@ -54,6 +54,8 @@ export class InputManager {
     this.pointerType = e.pointerType;
 
     const coords = this.getCanvasCoords(e);
+    // Keep the initial hit-test on the real pointer position. The game controller
+    // applies the same touch lift to the piece on pickup and to later move/up events.
     this.callbacks.onPointerDown(coords, e);
   }
 
@@ -61,7 +63,7 @@ export class InputManager {
     if (e.pointerId !== this.activePointerId) return;
     const coords = this.getCanvasCoords(e);
 
-    // Apply mobile ergonomic vertical lift if touch
+    // Apply the same mobile ergonomic lift used when the piece was picked up.
     if (this.pointerType === 'touch') {
       coords.y -= this.touchLiftY;
     }
