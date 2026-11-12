@@ -714,17 +714,6 @@ class SciFiBlockPuzzleGame {
               </button>
             </div>
 
-            <!-- Top 5 Leaderboard -->
-            <div class="pt-3 border-t border-slate-800">
-              <div class="flex items-center justify-between mb-2">
-                <label class="text-xs font-semibold uppercase tracking-wider text-teal-400">Hall of Fame (Top 5)</label>
-                <span class="text-[10px] text-slate-400 uppercase tracking-wider">Local Matrix</span>
-              </div>
-              <div id="leaderboard-list" class="space-y-1.5 font-mono text-xs">
-                <!-- Dynamically populated entries -->
-              </div>
-            </div>
-
             <!-- Reset Matrix -->
             <button id="restart-game-btn" class="w-full mt-2 py-2.5 rounded-lg border border-rose-900/50 bg-rose-950/40 text-rose-300 text-sm font-bold tracking-wide hover:bg-rose-900/60 transition">
               RESET MATRIX
@@ -778,7 +767,6 @@ class SciFiBlockPuzzleGame {
     const modal = document.getElementById('game-modal');
     if (modal) modal.classList.remove('hidden');
     this.updateModalPresetButtons();
-    this.renderLeaderboardUI();
   }
 
   closeSettingsModal() {
@@ -798,54 +786,6 @@ class SciFiBlockPuzzleGame {
         btn.className = 'preset-btn flex items-center justify-between p-3 rounded-lg border border-slate-700 bg-slate-800/40 text-slate-300 text-sm font-semibold hover:bg-slate-800 transition';
       }
     });
-  }
-
-  renderLeaderboardUI(highlightTimestamp = null) {
-    const container = document.getElementById('leaderboard-list');
-    if (!container || !this.leaderboard) return;
-
-    const scores = this.leaderboard.getScores();
-    const finalScoreDisplay = `
-      <div class="mb-3 p-2.5 rounded-lg border border-teal-500/40 bg-teal-950/40 flex items-center justify-between text-teal-200">
-        <span class="text-xs font-bold uppercase tracking-wider text-teal-300">Final Session Score</span>
-        <span class="font-mono font-black text-sm tracking-wide text-white">${Math.floor(this.score || 0).toLocaleString()} PTS</span>
-      </div>
-    `;
-
-    if (scores.length === 0) {
-      container.innerHTML = finalScoreDisplay + `<div class="py-2 text-center text-slate-500 italic text-[11px]">No high scores recorded yet</div>`;
-      return;
-    }
-
-    const rankColors = [
-      'text-amber-300 border-amber-500/40 bg-amber-950/40',
-      'text-slate-200 border-slate-500/40 bg-slate-800/40',
-      'text-amber-500 border-amber-700/40 bg-amber-950/20'
-    ];
-
-    const listHtml = scores.map((entry, idx) => {
-      const isNew = highlightTimestamp && entry.timestamp === highlightTimestamp;
-      const rankBadge = `#${idx + 1}`;
-      const badgeStyle = rankColors[idx] || 'text-slate-400 border-slate-800 bg-slate-900/40';
-      const borderGlow = isNew ? 'ring-1 ring-teal-400/80 bg-teal-950/60' : '';
-      const safeDate = Leaderboard.escapeHTML(entry.date);
-      const safeScore = Math.floor(entry.score).toLocaleString();
-
-      return `
-        <div class="flex items-center justify-between p-2 rounded border ${badgeStyle} ${borderGlow} transition">
-          <div class="flex items-center gap-2">
-            <span class="font-bold w-5">${rankBadge}</span>
-            <span class="text-slate-400 text-[11px]">${safeDate}</span>
-          </div>
-          <div class="flex items-center gap-1.5">
-            <span class="font-bold text-xs tracking-wide text-white">${safeScore} PTS</span>
-            ${isNew ? '<span class="text-[9px] font-extrabold px-1.5 py-0.5 rounded bg-teal-500/30 text-teal-300 border border-teal-500/50">NEW!</span>' : ''}
-          </div>
-        </div>
-      `;
-    }).join('');
-
-    container.innerHTML = finalScoreDisplay + listHtml;
   }
 
   switchPreset(presetId) {
@@ -871,12 +811,6 @@ class SciFiBlockPuzzleGame {
       this.lastSessionScoreResult = this.leaderboard.addScore(this.score);
     }
 
-    const result = this.lastSessionScoreResult || { scores: this.leaderboard.getScores(), isHighScore: false, rank: -1 };
-    const lastTimestamp = (result.isHighScore && result.scores[result.rank - 1])
-      ? result.scores[result.rank - 1].timestamp
-      : null;
-
-    this.renderLeaderboardUI(lastTimestamp);
   }
 
   resetGame() {
